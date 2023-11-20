@@ -1,0 +1,102 @@
+syntax = "proto3";
+option csharp_namespace = "KeyLookup";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service KeyLookupService {
+	rpc Store (StoreRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			post: "/api/entry/{key}"
+		};
+	}
+
+	rpc Get (GetRequest) returns (GetResponse) {
+		option (google.api.http) = {
+			get: "/api/entry/{key}"
+		};
+	}
+
+	rpc MGet (MGetRequest) returns (MGetResponse) {
+		option (google.api.http) = {
+			post: "/api/entry",
+			body: "keys"
+		};
+	}
+
+	rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			delete: "/api/entry/{key}"
+		};
+	}
+
+	//	rpc HGet (HGetRequest) returns (HGetResponse) {
+	//		option (google.api.http) = {
+	//			get: "/api/hash/{key}/{field}"
+	//		};
+	//	}
+
+	// rpc HMGet (HMGetRequest) returns (HMGetResponse);
+	// rpc HGetAll (HGetAllRequest) returns (HGetAllResponse);
+
+	//	rpc HDelete(HDeleteRequest) returns (google.protobuf.Empty) {
+	//		option (google.api.http) = {
+	//			delete: "/api/hash/{key}/{field}"
+	//		};
+	//	}
+}
+
+message StoreRequest {
+	string key = 1;
+	bytes content = 2;
+}
+
+message GetRequest {
+	string key = 1;
+}
+
+message GetResponse {
+	bytes content = 1;
+}
+
+message MGetRequest {
+	repeated string keys = 1;
+}
+
+message MGetResponse {
+	map<string, bytes> fieldsContent = 1;
+}
+
+message DeleteRequest {
+	string key = 1;
+}
+
+//message HGetRequest {
+//	string key = 1;
+//	string field = 2;
+//}
+//
+//message HGetResponse {
+//	bytes content = 1;
+//}
+//
+//message HMGetRequest {
+//	string key = 1;
+//	repeated string fields = 2;
+//}
+//
+//message HMGetResponse {
+//	map<string, bytes> fieldsContent = 1;
+//}
+//
+//message HGetAllRequest {
+//	string key = 1;
+//}
+//
+//message HGetAllResponse {
+//	map<string, bytes> fieldsContent = 1;
+//}
+//
+//message HDeleteRequest {
+//	string key = 1;
+//	string field = 2;
+//}

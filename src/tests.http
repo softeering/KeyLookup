@@ -1,0 +1,54 @@
+@entryKey = testentry
+@hashKey = testhashkey
+@hashField = testhashfield
+
+###
+
+POST https://localhost:5001/api/entry/{{entryKey}}
+
+{
+	"type": "entry",
+	"firstName": "John",
+	"lastName": "DOE"
+}
+
+###
+
+# gets an entry with key
+GET https://localhost:5001/api/entry/{{entryKey}}
+
+###
+
+DELETE https://localhost:5001/api/entry/{{entryKey}}
+
+###
+
+POST https://localhost:5001/api/hash/{{hashKey}}/{{hashField}}
+
+{
+	"type": "hash",
+	"firstName": "John",
+	"lastName": "DOE"
+}
+
+###
+
+# gets an entry with key
+GET https://localhost:5001/api/hash/{{hashKey}}/{{hashField}}
+
+### Delete one Hash entry
+
+DELETE https://localhost:5001/api/hash/{{hashKey}}/{{hashField}}
+
+### Delete all fields under a hash entry
+
+DELETE https://localhost:5001/api/hash/{{hashKey}}
+
+### Delete multiple fields under a hash entru
+
+DELETE https://localhost:5001/api/hash/{{hashKey}}?field=field1&field=field2
+
+###
+
+# gets an entry with key
+GET https://localhost:5001/v1/greeter/{{hashKey}}
