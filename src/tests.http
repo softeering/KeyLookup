@@ -14,6 +14,14 @@ POST https://localhost:5001/api/entry/{{entryKey}}
 
 ###
 
+GRPC localhost:5000/KeyLookup.KeyLookupService/Get
+
+{
+  "key": {{entryKey}}
+}
+
+###
+
 # gets an entry with key
 GET https://localhost:5001/api/entry/{{entryKey}}
 

@@ -5,23 +5,17 @@ using Microsoft.Extensions.Options;
 
 namespace KeyLookup.Services;
 
-public class FileSystemKeyLookupStore : IKeyLookupStore
+public class FileSystemKeyLookupStore(ILogger<FileSystemKeyLookupStore> logger, IOptions<KeyLookupOptions> options) : IKeyLookupStore
 {
 	private const string DataFileExtension = ".kl";
-	private readonly ILogger<FileSystemKeyLookupStore> _logger;
-	private readonly DirectoryInfo _entriesRoot;
-	private readonly DirectoryInfo _hashesRoot;
 
-	public FileSystemKeyLookupStore(ILogger<FileSystemKeyLookupStore> logger, IOptions<KeyLookupOptions> options)
-	{
-		this._logger = logger;
+	private readonly DirectoryInfo _entriesRoot = Directory.Exists(options.Value.RootFolder)
+		? new DirectoryInfo(Path.Combine(options.Value.RootFolder, "entries"))
+		: throw new ArgumentException($"Root Folder {options.Value.RootFolder} needs to exist");
 
-		if (!Directory.Exists(options.Value.RootFolder))
-			throw new ArgumentException($"Root Folder {options.Value.RootFolder} needs to exist");
-
-		this._entriesRoot = new DirectoryInfo(Path.Combine(options.Value.RootFolder, "entries"));
-		this._hashesRoot = new DirectoryInfo(Path.Combine(options.Value.RootFolder, "hashes"));
-	}
+	private readonly DirectoryInfo _hashesRoot = Directory.Exists(options.Value.RootFolder)
+		? new DirectoryInfo(Path.Combine(options.Value.RootFolder, "hashes"))
+		: throw new ArgumentException($"Root Folder {options.Value.RootFolder} needs to exist");
 
 	public async IAsyncEnumerable<string> ListEntriesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
@@ -41,18 +35,18 @@ public class FileSystemKeyLookupStore : IKeyLookupStore
 		}
 	}
 
-	public async Task StoreAsync(string key, ReadOnlyMemory<byte> content, CancellationToken cancellationToken = default)
+	public async Task StoreAsync(string key, Stream content, CancellationToken cancellationToken = default)
 	{
 		var filePath = ComputeEntryFilePath(this._entriesRoot, key);
 		using Stream target = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-		await target.WriteAsync(content, cancellationToken);
+		await content.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
 	}
 
-	public async Task HStoreAsync(string key, string field, ReadOnlyMemory<byte> content, CancellationToken cancellationToken = default)
+	public async Task HStoreAsync(string key, string field, Stream content, CancellationToken cancellationToken = default)
 	{
 		var filePath = ComputeHashFilePath(this._entriesRoot, key, field);
 		using Stream target = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-		await target.WriteAsync(content, cancellationToken);
+		await content.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
 	}
 
 	public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
@@ -92,39 +86,34 @@ public class FileSystemKeyLookupStore : IKeyLookupStore
 		throw new NotImplementedException();
 	}
 
-	public async Task<ReadOnlyMemory<byte>?> GetAsync(string key, CancellationToken cancellationToken = default)
+	public Task<Stream?> GetAsync(string key, CancellationToken cancellationToken = default)
 	{
 		var filePath = ComputeEntryFilePath(this._entriesRoot, key);
 
 		if (File.Exists(filePath))
 		{
-			using Stream source = File.OpenRead(filePath);
-			var result = new ReadOnlyMemory<byte>();
-			await source.WriteAsync(result, cancellationToken);
-			return result;
+			return Task.FromResult<Stream?>(File.OpenRead(filePath));
 		}
-		else
-		{
-			return null;
-		}
+
+		return Task.FromResult<Stream?>(null);
 	}
 
-	public Task<IDictionary<string, ReadOnlyMemory<byte>?>> MGetAsync(string[] keys, CancellationToken cancellationToken = default)
+	public Task<IDictionary<string, Stream?>> MGetAsync(string[] keys, CancellationToken cancellationToken = default)
 	{
 		throw new NotImplementedException();
 	}
 
-	public Task<ReadOnlyMemory<byte>?> HGetAsync(string key, string field, CancellationToken cancellationToken = default)
+	public Task<Stream?> HGetAsync(string key, string field, CancellationToken cancellationToken = default)
 	{
 		throw new NotImplementedException();
 	}
 
-	public Task<IDictionary<string, ReadOnlyMemory<byte>?>> HMGetAsync(string key, string[] fields, CancellationToken cancellationToken = default)
+	public Task<IDictionary<string, Stream?>> HMGetAsync(string key, string[] fields, CancellationToken cancellationToken = default)
 	{
 		throw new NotImplementedException();
 	}
 
-	public Task<IDictionary<string, ReadOnlyMemory<byte>?>> HGetAllAsync(string key, CancellationToken cancellationToken = default)
+	public Task<IDictionary<string, Stream?>> HGetAllAsync(string key, CancellationToken cancellationToken = default)
 	{
 		throw new NotImplementedException();
 	}

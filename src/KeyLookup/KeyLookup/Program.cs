@@ -15,6 +15,8 @@ builder.Services.AddHealthChecks()
 	.AddCheck<KeyLookupCheck>(nameof(KeyLookupCheck));
 
 builder.Services.AddSingleton<IKeyLookupStore, FileSystemKeyLookupStore>();
+builder.Services.AddSingleton<INodeManager, FileSystemNodeManager>();
+builder.Services.AddHostedService<NodeRegistrationJob>();
 
 if (keyLookupOptions.EnablePreload)
 {
@@ -23,12 +25,14 @@ if (keyLookupOptions.EnablePreload)
 
 builder.Services.AddGrpc(options =>
 {
+	options.EnableDetailedErrors = true;
 
 }).AddJsonTranscoding();
 builder.Services.AddControllers();
 
 if (builder.Environment.IsDevelopment())
 {
+	builder.Services.AddGrpcReflection();
 }
 
 var app = builder.Build();
@@ -37,6 +41,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
 	app.UseDeveloperExceptionPage();
+	app.MapGrpcReflectionService();
+	app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");
 }
 else
 {

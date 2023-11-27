@@ -1,33 +1,14 @@
 syntax = "proto3";
 option csharp_namespace = "KeyLookup";
-import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
+package KeyLookup;
+
 service KeyLookupService {
-	rpc Store (StoreRequest) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
-			post: "/api/entry/{key}"
-		};
-	}
-
-	rpc Get (GetRequest) returns (GetResponse) {
-		option (google.api.http) = {
-			get: "/api/entry/{key}"
-		};
-	}
-
-	rpc MGet (MGetRequest) returns (MGetResponse) {
-		option (google.api.http) = {
-			post: "/api/entry",
-			body: "keys"
-		};
-	}
-
-	rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
-			delete: "/api/entry/{key}"
-		};
-	}
+	rpc Store (StoreRequest) returns (google.protobuf.Empty);
+	rpc Get (GetRequest) returns (GetResponse) ;
+	rpc MGet (MGetRequest) returns (MGetResponse);
+	rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
 
 	//	rpc HGet (HGetRequest) returns (HGetResponse) {
 	//		option (google.api.http) = {
